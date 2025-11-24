@@ -49,10 +49,10 @@ function CardTag({
   return (
     <div
       data-testid={dataTestId}
-      className="flex h-16 w-12 flex-col items-center justify-center rounded-lg border border-white/10 bg-white/10 shadow-lg shadow-emerald-900/50 backdrop-blur-sm"
+      className="flex h-14 w-10 flex-col items-center justify-center rounded-lg border border-white/10 bg-white/10 shadow-lg shadow-emerald-900/40 backdrop-blur-sm sm:h-16 sm:w-12"
     >
-      <span className={`text-lg font-semibold leading-none ${color}`}>{card.rank}</span>
-      <span className={`text-base ${color}`}>{suitSymbols[card.suit]}</span>
+      <span className={`text-base font-semibold leading-none sm:text-lg ${color}`}>{card.rank}</span>
+      <span className={`text-sm sm:text-base ${color}`}>{suitSymbols[card.suit]}</span>
     </div>
   );
 }
@@ -79,7 +79,7 @@ function PlayerCard({
       data-testid={`player-${player.seat}`}
       data-selected={selected}
       onClick={() => onSelect(player.seat)}
-      className={`rounded-xl border bg-white/5 p-4 shadow-lg shadow-emerald-900/40 transition hover:border-emerald-300/60 hover:bg-emerald-900/20 cursor-pointer ${
+      className={`rounded-xl border bg-white/5 p-2.5 shadow-md shadow-emerald-900/30 transition hover:border-emerald-300/60 hover:bg-emerald-900/15 cursor-pointer ${
         selected || isWinner ? "border-emerald-400 ring-2 ring-emerald-500/60" : "border-white/5"
       }`}
       role="button"
@@ -91,9 +91,9 @@ function PlayerCard({
         }
       }}
     >
-      <header className="mb-3 flex items-center justify-between text-sm uppercase tracking-[0.08em] text-slate-200">
+      <header className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.08em] text-slate-200 sm:text-sm">
         <span className="flex items-center gap-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-xs font-bold text-white">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-[10px] font-bold text-white sm:text-xs">
             {player.seat}
           </span>
           {player.name}
@@ -103,7 +103,7 @@ function PlayerCard({
           Hole Cards
         </span>
       </header>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {player.cards.map((card) => (
           <CardTag
             key={`${card.rank}-${card.suit}-${player.seat}`}
@@ -115,7 +115,7 @@ function PlayerCard({
       </div>
 
       {judged && (
-        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200">
+        <div className="mt-2 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-[11px] text-slate-200 sm:text-xs">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-emerald-100">Best Hand</span>
             {isWinner && <span className="text-[10px] uppercase tracking-[0.12em] text-emerald-200">Top</span>}
@@ -207,16 +207,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-slate-950 to-black text-white">
-      <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-14 lg:px-10">
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-6 sm:gap-7 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-2">
           <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">Showdown View</p>
-          <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
+          <h1 className="text-xl font-semibold leading-tight text-white sm:text-2xl">
             10人プレイヤーのハンドが開示されたテーブル
           </h1>
-          <p className="text-base text-slate-300">
-            ボード5枚と各プレイヤーのホールカードを一覧表示。次のステップで役判定ロジックと勝者ハイライトを追加する。
+          <p className="text-sm text-slate-300 sm:text-base">
+            ボード5枚と各プレイヤーのホールカードを一覧表示。ジャッジすると最強ハンドをハイライト。
           </p>
-          <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-emerald-100">
+          <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-emerald-100 sm:px-4">
             <span className="text-xs uppercase tracking-[0.18em] text-emerald-200">Selected</span>
             <span data-testid="selected-seat" className="font-semibold">
               {selectedSeat ?? "未選択"}
@@ -234,7 +234,7 @@ export default function Home() {
               type="button"
               data-testid="judge-button"
               onClick={() => setJudgedWinners([...winners])}
-              className="ml-3 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500"
+              className="ml-auto rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500 sm:ml-3"
             >
               Judge
             </button>
@@ -261,21 +261,24 @@ export default function Home() {
           )}
         </header>
 
-        <section className="rounded-2xl border border-white/5 bg-gradient-to-br from-emerald-900/60 via-emerald-950/70 to-black p-6 shadow-xl shadow-emerald-900/40">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Board</h2>
+        <section className="rounded-2xl border border-white/5 bg-gradient-to-br from-emerald-900/60 via-emerald-950/70 to-black p-3 shadow-xl shadow-emerald-900/40 sm:p-5">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white sm:text-lg">Board</h2>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase text-emerald-200">
               River
             </span>
           </div>
-          <div data-testid="board-section" className="flex flex-wrap gap-3">
+          <div
+            data-testid="board-section"
+            className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:gap-3 sm:overflow-visible"
+          >
             {board.map((card) => (
               <CardTag key={`${card.rank}-${card.suit}`} card={card} context="board" />
             ))}
           </div>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
           {players.map((player) => (
             <PlayerCard
               key={player.seat}
