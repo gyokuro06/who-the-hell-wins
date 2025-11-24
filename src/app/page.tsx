@@ -243,7 +243,6 @@ export default function Home() {
   const activeWinners = judgedWinners ?? [];
   const judged = judgedWinners !== null;
   const selectionHitCount = selectedSeats.filter((s) => activeWinners.includes(s)).length;
-  const selectedIsBest = selectionHitCount > 0;
 
   const handleSelect = (seat: number) => {
     setSelectedSeats((prev) => {
@@ -251,7 +250,6 @@ export default function Home() {
         return prev.filter((s) => s !== seat);
       }
       if (prev.length < 3) return [...prev, seat];
-      // replace最古 with new to keep最新3
       return [...prev.slice(1), seat];
     });
   };
@@ -269,9 +267,6 @@ export default function Home() {
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-emerald-100 sm:px-4">
             <span className="text-xs uppercase tracking-[0.18em] text-emerald-200">Selected</span>
-            <span data-testid="selected-seat" className="font-semibold">
-              {selectedSeats.length === 0 ? "未選択" : `${selectedSeats[0]}`}
-            </span>
             {selectedSeats.length > 0 && (
               <span className="flex items-center gap-1">
                 {selectedSeats.map((s) => (
@@ -283,7 +278,7 @@ export default function Home() {
                         : "bg-emerald-700/30 text-white"
                     }`}
                   >
-                    P{s}
+                    Player {s}
                   </span>
                 ))}
               </span>

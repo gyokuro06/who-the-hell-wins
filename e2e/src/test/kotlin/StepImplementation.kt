@@ -1,3 +1,5 @@
+import com.microsoft.playwright.Locator
+import com.microsoft.playwright.options.WaitForSelectorState
 import com.thoughtworks.gauge.Step
 import kotlin.test.assertEquals
 
@@ -39,7 +41,7 @@ class StepImplementation {
 
     @Step("選択表示はプレイヤー1になっている")
     fun selectedSeatIsPlayer1() {
-        val text = page.locator("[data-testid='selected-seat']").innerText().trim()
-        assertEquals("1", text)
+        val count = page.locator("[data-testid='player-1'][data-selected='true']").count()
+        assertEquals(1, count, "player 1 should be marked selected")
     }
 }
