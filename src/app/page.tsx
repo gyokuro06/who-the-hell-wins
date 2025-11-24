@@ -93,10 +93,9 @@ function PlayerCard({
     >
       <header className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.08em] text-slate-200 sm:text-sm">
         <span className="flex items-center gap-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-[10px] font-bold text-white sm:text-xs">
-            {player.seat}
+          <span className="inline-flex h-6 w-18 items-center justify-center rounded-full bg-emerald-700 text-[10px] font-bold text-white sm:text-xs">
+            {`Player ${player.seat}`}
           </span>
-          {player.name}
         </span>
         {isWinner && (
           <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
