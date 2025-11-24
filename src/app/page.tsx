@@ -98,10 +98,13 @@ function PlayerCard({
           </span>
           {player.name}
         </span>
-        <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
-          {isWinner && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">Best</span>}
-          Hole Cards
-        </span>
+        {isWinner && (
+          <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
+            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+              Best
+            </span>
+          </span>
+        )}
       </header>
       <div className="flex items-center gap-1.5 sm:gap-2">
         {player.cards.map((card) => (
@@ -261,7 +264,7 @@ export default function Home() {
           )}
         </header>
 
-        <section className="rounded-2xl border border-white/5 bg-gradient-to-br from-emerald-900/60 via-emerald-950/70 to-black p-3 shadow-xl shadow-emerald-900/40 sm:p-5">
+        <section className="sticky top-2 z-20 rounded-2xl border border-white/5 bg-gradient-to-br from-emerald-900/70 via-emerald-950/80 to-black p-3 shadow-xl shadow-emerald-900/50 backdrop-blur sm:p-5">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-white sm:text-lg">Board</h2>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase text-emerald-200">
@@ -278,7 +281,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
+        <section className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2 sm:gap-3">
           {players.map((player) => (
             <PlayerCard
               key={player.seat}
