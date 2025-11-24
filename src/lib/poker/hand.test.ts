@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { evaluateHand, compareHands } from "./hand";
+import { Card } from "./domain";
 
 const H = "hearts";
 const D = "diamonds";
@@ -8,7 +9,7 @@ const S = "spades";
 
 describe("hand evaluation (Texas Hold'em 7 -> best 5)", () => {
   test("detects straight flush vs weaker hands", () => {
-    const cards = [
+    const cards: Card[] = [
       { rank: "A", suit: H },
       { rank: "K", suit: H },
       { rank: "Q", suit: H },
@@ -24,7 +25,7 @@ describe("hand evaluation (Texas Hold'em 7 -> best 5)", () => {
   });
 
   test("wheel straight (A-2-3-4-5) is the weakest straight", () => {
-    const cards = [
+    const cards: Card[] = [
       { rank: "A", suit: S },
       { rank: "2", suit: H },
       { rank: "3", suit: D },
