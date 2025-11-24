@@ -1,0 +1,10 @@
+[versions]
+gaugeJava = "0.13.0"
+playwright = "1.55.0"
+hoplite = "2.9.0"
+
+[libraries]
+gaugeJava = { module = "com.thoughtworks.gauge:gauge-java", version.ref = "gaugeJava" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+hopliteCore = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
+hopliteToml = { module = "com.sksamuel.hoplite:hoplite-toml", version.ref = "hoplite" }

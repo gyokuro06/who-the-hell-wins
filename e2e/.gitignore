@@ -1,0 +1,7 @@
+.gauge/
+.gradle/
+.idea/
+.kotlin/
+build/
+logs/
+reports/
