@@ -75,13 +75,29 @@ function PlayerCard({
   rank: number | null;
 }) {
   const selected = selectedOrder !== null;
+  const selectionBg =
+    selectedOrder === 0
+      ? "bg-emerald-900/60"
+      : selectedOrder === 1
+        ? "bg-emerald-800/50"
+        : selectedOrder === 2
+          ? "bg-emerald-800/30"
+          : "bg-white/5";
+  const selectionOverlay =
+    selectedOrder === null
+      ? null
+      : selectedOrder === 0
+        ? "1st"
+        : selectedOrder === 1
+          ? "2nd"
+          : "3rd";
 
   return (
     <article
       data-testid={`player-${player.seat}`}
       data-selected={selected}
       onClick={() => onSelect(player.seat)}
-      className={`rounded-xl border bg-white/5 p-2.5 shadow-md shadow-emerald-900/30 transition hover:border-emerald-300/60 hover:bg-emerald-900/15 cursor-pointer ${
+      className={`relative overflow-hidden rounded-xl border ${selectionBg} p-2.5 shadow-md shadow-emerald-900/30 transition hover:border-emerald-300/60 hover:bg-emerald-900/15 cursor-pointer ${
         selected || isWinner ? "border-emerald-400 ring-2 ring-emerald-500/60" : "border-white/5"
       }`}
       role="button"
@@ -93,6 +109,11 @@ function PlayerCard({
         }
       }}
     >
+      {selectionOverlay && (
+        <span className="pointer-events-none absolute right-2 top-2 rotate-12 text-3xl font-black tracking-wide text-emerald-400/15 sm:text-4xl">
+          {selectionOverlay}
+        </span>
+      )}
       <header className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.08em] text-slate-200 sm:text-sm">
         <span className="flex items-center gap-2">
           <span className="inline-flex h-6 items-center justify-center rounded-full bg-emerald-700 px-2 text-[10px] font-bold text-white sm:text-xs">
@@ -100,19 +121,9 @@ function PlayerCard({
           </span>
         </span>
         <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
-          {selectedOrder !== null && (
-            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
-              #{selectedOrder + 1}
-            </span>
-          )}
           {judged && rank !== null && (
             <span className="rounded-full bg-slate-200/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
               Rank {rank}
-            </span>
-          )}
-          {isWinner && (
-            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
-              Best
             </span>
           )}
         </span>
@@ -231,7 +242,8 @@ export default function Home() {
 
   const activeWinners = judgedWinners ?? [];
   const judged = judgedWinners !== null;
-  const selectedIsBest = selectedSeats.some((s) => activeWinners.includes(s));
+  const selectionHitCount = selectedSeats.filter((s) => activeWinners.includes(s)).length;
+  const selectedIsBest = selectionHitCount > 0;
 
   const handleSelect = (seat: number) => {
     setSelectedSeats((prev) => {
@@ -257,16 +269,34 @@ export default function Home() {
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-emerald-100 sm:px-4">
             <span className="text-xs uppercase tracking-[0.18em] text-emerald-200">Selected</span>
-            <span data-testid="selected-seat" className="font-semibold flex items-center gap-1">
+            <span data-testid="selected-seat" className="font-semibold">
               {selectedSeats.length === 0 ? "未選択" : `${selectedSeats[0]}`}
             </span>
+            {selectedSeats.length > 0 && (
+              <span className="flex items-center gap-1">
+                {selectedSeats.map((s) => (
+                  <span
+                    key={s}
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      activeWinners.includes(s) && judged
+                        ? "bg-emerald-600/60 text-white"
+                        : "bg-emerald-700/30 text-white"
+                    }`}
+                  >
+                    P{s}
+                  </span>
+                ))}
+              </span>
+            )}
             <span data-testid="selected-strength" className="text-xs text-slate-300">
               {judged
                 ? selectedSeats.length === 0
                   ? "未選択"
-                  : selectedIsBest
-                    ? "選択の中に最強が含まれます"
-                    : "選択の中に最強は含まれません"
+                  : selectionHitCount === selectedSeats.length && selectionHitCount === activeWinners.length
+                    ? "完全正解"
+                    : selectionHitCount > 0
+                      ? "部分正解"
+                      : "不正解"
                 : "未判定"}
             </span>
             <button
