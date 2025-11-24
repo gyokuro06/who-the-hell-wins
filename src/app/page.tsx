@@ -62,11 +62,15 @@ function PlayerCard({
   selectedSeat,
   onSelect,
   isWinner,
+  judged,
+  evaluation,
 }: {
   player: Player;
   selectedSeat: number | null;
   onSelect: (seat: number) => void;
   isWinner: boolean;
+  judged: boolean;
+  evaluation: EvaluatedHand;
 }) {
   const selected = selectedSeat === player.seat;
 
@@ -109,6 +113,21 @@ function PlayerCard({
           />
         ))}
       </div>
+
+      {judged && (
+        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-emerald-100">Best Hand</span>
+            {isWinner && <span className="text-[10px] uppercase tracking-[0.12em] text-emerald-200">Top</span>}
+          </div>
+          <div className="mt-1 text-slate-100">
+            {evaluation.category} ・ {evaluation.primaryRanks.join(" ")}
+          </div>
+          {evaluation.kickers && evaluation.kickers.length > 0 && (
+            <div className="text-slate-400">Kicker: {evaluation.kickers.join(" ")}</div>
+          )}
+        </div>
+      )}
     </article>
   );
 }
@@ -152,6 +171,7 @@ function dealGame(numPlayers = 10) {
 export default function Home() {
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
   const [{ board, players }] = useState(() => dealGame());
+  const [judgedWinners, setJudgedWinners] = useState<number[] | null>(null);
   const evaluations = useMemo(
     () =>
       players.map((player) => ({
@@ -181,7 +201,9 @@ export default function Home() {
     return { winners: winnerSeats, bestResult: best?.result };
   }, [evaluations]);
 
-  const selectedIsBest = selectedSeat !== null && winners.includes(selectedSeat);
+  const activeWinners = judgedWinners ?? [];
+  const selectedIsBest = selectedSeat !== null && activeWinners.includes(selectedSeat);
+  const judged = judgedWinners !== null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-slate-950 to-black text-white">
@@ -200,13 +222,43 @@ export default function Home() {
               {selectedSeat ?? "未選択"}
             </span>
             <span data-testid="selected-strength" className="text-xs text-slate-300">
-              {selectedSeat === null
-                ? "未判定"
-                : selectedIsBest
-                  ? "最強のハンドです"
-                  : "最強ではありません"}
+              {judged
+                ? selectedSeat === null
+                  ? "未選択"
+                  : selectedIsBest
+                    ? "最強のハンドです"
+                    : "最強ではありません"
+                : "未判定"}
             </span>
+            <button
+              type="button"
+              data-testid="judge-button"
+              onClick={() => setJudgedWinners([...winners])}
+              className="ml-3 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500"
+            >
+              Judge
+            </button>
           </div>
+
+          {judged && (
+            <div
+              data-testid="judge-result"
+              className="mt-2 inline-flex flex-wrap items-center gap-2 rounded-lg border border-emerald-300/30 bg-emerald-900/30 px-4 py-3 text-sm text-emerald-50"
+            >
+              <span className="text-xs uppercase tracking-[0.18em] text-emerald-200">Result</span>
+              <span className="font-semibold">
+                最強プレイヤー:{" "}
+                {activeWinners.length
+                  ? activeWinners.map((seat) => `Player ${seat}`).join(", ")
+                  : "なし"}
+              </span>
+              {bestResult && (
+                <span className="text-emerald-100">
+                  役: {bestResult.category} ({bestResult.primaryRanks.join(" ")})
+                </span>
+              )}
+            </div>
+          )}
         </header>
 
         <section className="rounded-2xl border border-white/5 bg-gradient-to-br from-emerald-900/60 via-emerald-950/70 to-black p-6 shadow-xl shadow-emerald-900/40">
@@ -230,7 +282,9 @@ export default function Home() {
               player={player}
               selectedSeat={selectedSeat}
               onSelect={setSelectedSeat}
-              isWinner={winners.includes(player.seat)}
+              isWinner={activeWinners.includes(player.seat)}
+              judged={judged}
+              evaluation={evaluations.find((e) => e.seat === player.seat)!.result}
             />
           ))}
         </section>
