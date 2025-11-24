@@ -59,20 +59,22 @@ function CardTag({
 
 function PlayerCard({
   player,
-  selectedSeat,
+  selectedOrder,
   onSelect,
   isWinner,
   judged,
   evaluation,
+  rank,
 }: {
   player: Player;
-  selectedSeat: number | null;
+  selectedOrder: number | null;
   onSelect: (seat: number) => void;
   isWinner: boolean;
   judged: boolean;
   evaluation: EvaluatedHand;
+  rank: number | null;
 }) {
-  const selected = selectedSeat === player.seat;
+  const selected = selectedOrder !== null;
 
   return (
     <article
@@ -93,17 +95,27 @@ function PlayerCard({
     >
       <header className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.08em] text-slate-200 sm:text-sm">
         <span className="flex items-center gap-2">
-          <span className="inline-flex h-6 w-18 items-center justify-center rounded-full bg-emerald-700 text-[10px] font-bold text-white sm:text-xs">
+          <span className="inline-flex h-6 items-center justify-center rounded-full bg-emerald-700 px-2 text-[10px] font-bold text-white sm:text-xs">
             {`Player ${player.seat}`}
           </span>
         </span>
-        {isWinner && (
-          <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
+        <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
+          {selectedOrder !== null && (
+            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+              #{selectedOrder + 1}
+            </span>
+          )}
+          {judged && rank !== null && (
+            <span className="rounded-full bg-slate-200/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
+              Rank {rank}
+            </span>
+          )}
+          {isWinner && (
             <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
               Best
             </span>
-          </span>
-        )}
+          )}
+        </span>
       </header>
       <div className="flex items-center gap-1.5 sm:gap-2">
         {player.cards.map((card) => (
@@ -171,7 +183,7 @@ function dealGame(numPlayers = 10) {
 }
 
 export default function Home() {
-  const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [{ board, players }] = useState(() => dealGame());
   const [judgedWinners, setJudgedWinners] = useState<number[] | null>(null);
   const evaluations = useMemo(
@@ -203,9 +215,34 @@ export default function Home() {
     return { winners: winnerSeats, bestResult: best?.result };
   }, [evaluations]);
 
+  const rankMap = useMemo(() => {
+    const sorted = [...evaluations].sort((a, b) => compareHands(b.result, a.result));
+    const map = new Map<number, number>();
+    let currentRank = 1;
+    sorted.forEach((entry, idx) => {
+      if (idx > 0) {
+        const cmp = compareHands(entry.result, sorted[idx - 1].result);
+        if (cmp !== 0) currentRank = idx + 1;
+      }
+      map.set(entry.seat, currentRank);
+    });
+    return map;
+  }, [evaluations]);
+
   const activeWinners = judgedWinners ?? [];
-  const selectedIsBest = selectedSeat !== null && activeWinners.includes(selectedSeat);
   const judged = judgedWinners !== null;
+  const selectedIsBest = selectedSeats.some((s) => activeWinners.includes(s));
+
+  const handleSelect = (seat: number) => {
+    setSelectedSeats((prev) => {
+      if (prev.includes(seat)) {
+        return prev.filter((s) => s !== seat);
+      }
+      if (prev.length < 3) return [...prev, seat];
+      // replace最古 with new to keep最新3
+      return [...prev.slice(1), seat];
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-slate-950 to-black text-white">
@@ -220,16 +257,16 @@ export default function Home() {
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-emerald-100 sm:px-4">
             <span className="text-xs uppercase tracking-[0.18em] text-emerald-200">Selected</span>
-            <span data-testid="selected-seat" className="font-semibold">
-              {selectedSeat ?? "未選択"}
+            <span data-testid="selected-seat" className="font-semibold flex items-center gap-1">
+              {selectedSeats.length === 0 ? "未選択" : `${selectedSeats[0]}`}
             </span>
             <span data-testid="selected-strength" className="text-xs text-slate-300">
               {judged
-                ? selectedSeat === null
+                ? selectedSeats.length === 0
                   ? "未選択"
                   : selectedIsBest
-                    ? "最強のハンドです"
-                    : "最強ではありません"
+                    ? "選択の中に最強が含まれます"
+                    : "選択の中に最強は含まれません"
                 : "未判定"}
             </span>
             <button
@@ -285,10 +322,14 @@ export default function Home() {
             <PlayerCard
               key={player.seat}
               player={player}
-              selectedSeat={selectedSeat}
-              onSelect={setSelectedSeat}
+              selectedOrder={(() => {
+                const idx = selectedSeats.indexOf(player.seat);
+                return idx === -1 ? null : idx;
+              })()}
+              onSelect={handleSelect}
               isWinner={activeWinners.includes(player.seat)}
               judged={judged}
+              rank={judged ? rankMap.get(player.seat) ?? null : null}
               evaluation={evaluations.find((e) => e.seat === player.seat)!.result}
             />
           ))}
