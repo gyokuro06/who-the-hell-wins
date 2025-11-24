@@ -17,27 +17,6 @@ type Player = {
 
 type CardContext = "board" | "hole";
 
-const board: Card[] = [
-  { rank: "A", suit: "hearts" },
-  { rank: "K", suit: "diamonds" },
-  { rank: "Q", suit: "spades" },
-  { rank: "J", suit: "clubs" },
-  { rank: "9", suit: "hearts" },
-];
-
-const players: Player[] = [
-  { seat: 1, name: "Player 1", cards: [{ rank: "10", suit: "hearts" }, { rank: "8", suit: "clubs" }] },
-  { seat: 2, name: "Player 2", cards: [{ rank: "A", suit: "clubs" }, { rank: "A", suit: "spades" }] },
-  { seat: 3, name: "Player 3", cards: [{ rank: "7", suit: "diamonds" }, { rank: "7", suit: "spades" }] },
-  { seat: 4, name: "Player 4", cards: [{ rank: "Q", suit: "diamonds" }, { rank: "10", suit: "spades" }] },
-  { seat: 5, name: "Player 5", cards: [{ rank: "K", suit: "clubs" }, { rank: "K", suit: "spades" }] },
-  { seat: 6, name: "Player 6", cards: [{ rank: "5", suit: "hearts" }, { rank: "5", suit: "clubs" }] },
-  { seat: 7, name: "Player 7", cards: [{ rank: "J", suit: "spades" }, { rank: "2", suit: "diamonds" }] },
-  { seat: 8, name: "Player 8", cards: [{ rank: "4", suit: "clubs" }, { rank: "4", suit: "hearts" }] },
-  { seat: 9, name: "Player 9", cards: [{ rank: "9", suit: "clubs" }, { rank: "3", suit: "hearts" }] },
-  { seat: 10, name: "Player 10", cards: [{ rank: "6", suit: "diamonds" }, { rank: "6", suit: "clubs" }] },
-];
-
 const suitSymbols: Record<Suit, string> = {
   spades: "♠",
   hearts: "♥",
@@ -128,8 +107,45 @@ function PlayerCard({
   );
 }
 
+function buildDeck(): Card[] {
+  const ranks = ["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"];
+  const suits: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
+  const deck: Card[] = [];
+  for (const suit of suits) {
+    for (const rank of ranks) {
+      deck.push({ rank, suit });
+    }
+  }
+  return deck;
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function dealGame(numPlayers = 10) {
+  const deck = shuffle(buildDeck());
+  const board = deck.slice(0, 5);
+  const playerCards = deck.slice(5, 5 + numPlayers * 2);
+  const players: Player[] = Array.from({ length: numPlayers }, (_, idx) => {
+    const offset = idx * 2;
+    return {
+      seat: idx + 1,
+      name: `Player ${idx + 1}`,
+      cards: [playerCards[offset], playerCards[offset + 1]],
+    } as Player;
+  });
+  return { board, players };
+}
+
 export default function Home() {
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const [{ board, players }] = useState(() => dealGame());
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-slate-950 to-black text-white">
