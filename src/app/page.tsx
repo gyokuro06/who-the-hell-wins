@@ -25,10 +25,10 @@ const suitSymbols: Record<Suit, string> = {
 };
 
 const suitColors: Record<Suit, string> = {
-  spades: "text-slate-100",
-  clubs: "text-emerald-200",
-  hearts: "text-rose-300",
-  diamonds: "text-amber-200",
+  spades: "text-white",
+  clubs: "text-white",
+  hearts: "text-red-400",
+  diamonds: "text-red-400",
 };
 
 function CardTag({
