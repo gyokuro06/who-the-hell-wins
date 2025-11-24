@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { compareHands, evaluateHand, type EvaluatedHand } from "@/lib/poker/hand";
 
 type Suit = "spades" | "hearts" | "diamonds" | "clubs";
 
@@ -60,10 +61,12 @@ function PlayerCard({
   player,
   selectedSeat,
   onSelect,
+  isWinner,
 }: {
   player: Player;
   selectedSeat: number | null;
   onSelect: (seat: number) => void;
+  isWinner: boolean;
 }) {
   const selected = selectedSeat === player.seat;
 
@@ -73,7 +76,7 @@ function PlayerCard({
       data-selected={selected}
       onClick={() => onSelect(player.seat)}
       className={`rounded-xl border bg-white/5 p-4 shadow-lg shadow-emerald-900/40 transition hover:border-emerald-300/60 hover:bg-emerald-900/20 cursor-pointer ${
-        selected ? "border-emerald-400 ring-2 ring-emerald-500/60" : "border-white/5"
+        selected || isWinner ? "border-emerald-400 ring-2 ring-emerald-500/60" : "border-white/5"
       }`}
       role="button"
       tabIndex={0}
@@ -91,7 +94,10 @@ function PlayerCard({
           </span>
           {player.name}
         </span>
-        <span className="text-xs text-emerald-200">Hole Cards</span>
+        <span className="inline-flex items-center gap-1 text-xs text-emerald-200">
+          {isWinner && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">Best</span>}
+          Hole Cards
+        </span>
       </header>
       <div className="flex items-center gap-2">
         {player.cards.map((card) => (
@@ -146,6 +152,36 @@ function dealGame(numPlayers = 10) {
 export default function Home() {
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
   const [{ board, players }] = useState(() => dealGame());
+  const evaluations = useMemo(
+    () =>
+      players.map((player) => ({
+        seat: player.seat,
+        result: evaluateHand([...board, ...player.cards]),
+      })),
+    [board, players]
+  );
+
+  const { winners, bestResult } = useMemo(() => {
+    let best: { seat: number; result: EvaluatedHand } | null = null;
+    const winnerSeats: number[] = [];
+    for (const entry of evaluations) {
+      if (!best) {
+        best = entry;
+        winnerSeats.push(entry.seat);
+        continue;
+      }
+      const cmp = compareHands(entry.result, best.result);
+      if (cmp > 0) {
+        best = entry;
+        winnerSeats.splice(0, winnerSeats.length, entry.seat);
+      } else if (cmp === 0) {
+        winnerSeats.push(entry.seat);
+      }
+    }
+    return { winners: winnerSeats, bestResult: best?.result };
+  }, [evaluations]);
+
+  const selectedIsBest = selectedSeat !== null && winners.includes(selectedSeat);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-slate-950 to-black text-white">
@@ -162,6 +198,13 @@ export default function Home() {
             <span className="text-xs uppercase tracking-[0.18em] text-emerald-200">Selected</span>
             <span data-testid="selected-seat" className="font-semibold">
               {selectedSeat ?? "未選択"}
+            </span>
+            <span data-testid="selected-strength" className="text-xs text-slate-300">
+              {selectedSeat === null
+                ? "未判定"
+                : selectedIsBest
+                  ? "最強のハンドです"
+                  : "最強ではありません"}
             </span>
           </div>
         </header>
@@ -187,6 +230,7 @@ export default function Home() {
               player={player}
               selectedSeat={selectedSeat}
               onSelect={setSelectedSeat}
+              isWinner={winners.includes(player.seat)}
             />
           ))}
         </section>
